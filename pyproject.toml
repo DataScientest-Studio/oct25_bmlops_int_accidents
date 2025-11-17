@@ -1,0 +1,11 @@
+[project]
+name = "mlops-accidents"
+version = "0.1.0"
+description = "forked from DataScientest-Studio/oct25_bmlops_int_accidents"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.121.2",
+    "httptools>=0.7.1",
+    "pandas>=2.3.3",
+]
