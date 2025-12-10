@@ -640,6 +640,110 @@ def insert_preprocessed_data(conn: connection, df: pd.DataFrame, batch_size: int
     }
 
 
+def assign_dataset_splits(conn: connection, train_ratio: float = 0.6, 
+                         val_ratio: float = 0.2, test_ratio: float = 0.2,
+                         random_state: int = 42) -> Dict[str, int]:
+    """
+    Assign dataset splits (train/validation/test) to clean_data records using stratified sampling.
+    
+    This function ensures:
+    - Consistent splits across runs (fixed random_state)
+    - Balanced class distribution in each split (stratified by severity)
+    - Only current records are split
+    
+    Args:
+        conn: Database connection
+        train_ratio: Proportion of data for training (default: 0.6)
+        val_ratio: Proportion of data for validation (default: 0.2)
+        test_ratio: Proportion of data for testing (default: 0.2)
+        random_state: Random seed for reproducibility (default: 42)
+        
+    Returns:
+        Dictionary with counts for each split
+    """
+    logging.info("Assigning dataset splits using stratified sampling...")
+    
+    # Validate ratios
+    if not np.isclose(train_ratio + val_ratio + test_ratio, 1.0):
+        raise ValueError(f"Split ratios must sum to 1.0, got {train_ratio + val_ratio + test_ratio}")
+    
+    # Load current records
+    query = """
+        SELECT record_id, severity
+        FROM clean_data 
+        WHERE is_current = TRUE
+    """
+    df = pd.read_sql_query(query, conn)
+    logging.info(f"Loaded {len(df)} current records for splitting")
+    
+    if len(df) == 0:
+        logging.warning("No records found to split")
+        return {'train': 0, 'validation': 0, 'test': 0}
+    
+    # Initialize split column
+    df['dataset_split'] = None
+    
+    # Perform stratified split by severity
+    from sklearn.model_selection import train_test_split
+    
+    # First split: train vs (validation + test)
+    train_indices, temp_indices = train_test_split(
+        df.index,
+        test_size=(val_ratio + test_ratio),
+        stratify=df['severity'],
+        random_state=random_state
+    )
+    
+    # Second split: validation vs test
+    val_test_df = df.loc[temp_indices]
+    val_size = val_ratio / (val_ratio + test_ratio)
+    
+    val_indices, test_indices = train_test_split(
+        val_test_df.index,
+        test_size=(1 - val_size),
+        stratify=val_test_df['severity'],
+        random_state=random_state
+    )
+    
+    # Assign splits
+    df.loc[train_indices, 'dataset_split'] = 'train'
+    df.loc[val_indices, 'dataset_split'] = 'validation'
+    df.loc[test_indices, 'dataset_split'] = 'test'
+    
+    # Update database
+    cursor = conn.cursor()
+    
+    try:
+        update_query = """
+            UPDATE clean_data 
+            SET dataset_split = %s 
+            WHERE record_id = %s
+        """
+        
+        update_data = [(row['dataset_split'], row['record_id']) 
+                      for _, row in df.iterrows()]
+        
+        execute_batch(cursor, update_query, update_data, page_size=1000)
+        conn.commit()
+        
+        # Count splits
+        split_counts = df['dataset_split'].value_counts().to_dict()
+        
+        logging.info(f"Dataset splits assigned successfully:")
+        logging.info(f"  Train: {split_counts.get('train', 0)} ({split_counts.get('train', 0)/len(df)*100:.1f}%)")
+        logging.info(f"  Validation: {split_counts.get('validation', 0)} ({split_counts.get('validation', 0)/len(df)*100:.1f}%)")
+        logging.info(f"  Test: {split_counts.get('test', 0)} ({split_counts.get('test', 0)/len(df)*100:.1f}%)")
+        
+        return split_counts
+        
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"Error assigning dataset splits: {e}")
+        raise
+    finally:
+        cursor.close()
+
+
 def clear_preprocessed_data(conn: connection) -> None:
     """
     Clear existing data from clean_data table using TRUNCATE for better performance.
@@ -744,9 +848,52 @@ if __name__ == "__main__":
         action='store_true',
         help="Clear all existing data before inserting (use for complete refresh)"
     )
+    parser.add_argument(
+        '--assign-splits',
+        action='store_true',
+        help="Assign dataset splits (train/validation/test) after cleaning"
+    )
+    parser.add_argument(
+        '--train-ratio',
+        type=float,
+        default=0.6,
+        help="Proportion of data for training (default: 0.6)"
+    )
+    parser.add_argument(
+        '--val-ratio',
+        type=float,
+        default=0.2,
+        help="Proportion of data for validation (default: 0.2)"
+    )
+    parser.add_argument(
+        '--test-ratio',
+        type=float,
+        default=0.2,
+        help="Proportion of data for testing (default: 0.2)"
+    )
+    parser.add_argument(
+        '--random-state',
+        type=int,
+        default=42,
+        help="Random seed for reproducibility (default: 42)"
+    )
     
     args = parser.parse_args()
     
     # With SCD Type 2, we typically don't clear existing data
     # unless explicitly requested for a complete refresh
     main(clear_existing=args.clear_all)
+    
+    # Assign dataset splits if requested
+    if args.assign_splits:
+        conn = get_db_connection()
+        try:
+            assign_dataset_splits(
+                conn,
+                train_ratio=args.train_ratio,
+                val_ratio=args.val_ratio,
+                test_ratio=args.test_ratio,
+                random_state=args.random_state
+            )
+        finally:
+            conn.close()

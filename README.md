@@ -110,3 +110,37 @@ The ETL pipeline can be executed using the following commands:
 make do_etl_full  # Ingest full data
 make do_etl_chunked  # Ingest next data chunk
 ```
+
+## 🤖 Model Training
+
+The project implements a Random Forest Classifier for predicting accident severity. The training pipeline uses a **static validation dataset** approach for consistent model evaluation.
+
+### Quick Start
+
+1. **Assign dataset splits** (one-time setup):
+   ```bash
+   make assign_splits
+   ```
+
+2. **Train the model**:
+   ```bash
+   make train_model
+   ```
+
+3. **Or run the complete ML pipeline**:
+   ```bash
+   make do_ml_pipeline  # Runs: clean_data → assign_splits → train_model
+   ```
+
+### Validation Strategy
+
+- **Static train/validation/test splits**: 60% / 20% / 20%
+- **Stratified sampling**: Ensures balanced class distribution
+- **Database-tracked**: Split assignments stored in `clean_data.dataset_split` column
+- **Reproducible**: Fixed random seed (42) for consistent splits
+
+### Model & Metrics
+
+- **Model**: Random Forest Classifier with 100 trees
+- **Metrics**: Accuracy, Precision, Recall, F1-score (weighted), ROC-AUC
+- **Artifacts**: Model, metrics, feature importance, confusion matrix, config
