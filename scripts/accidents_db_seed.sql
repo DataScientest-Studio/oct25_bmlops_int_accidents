@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS clean_data (
     latitude FLOAT,
     longitude FLOAT,
     holiday BOOLEAN DEFAULT FALSE,
+    dataset_split VARCHAR(20) DEFAULT NULL,  -- 'train', 'validation', or 'test'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_current BOOLEAN DEFAULT TRUE,
@@ -116,3 +117,5 @@ CREATE TABLE IF NOT EXISTS clean_data (
 );
 CREATE INDEX IF NOT EXISTS idx_clean_data_numacc_userid_current
     ON clean_data (num_acc, raw_user_id, is_current);
+CREATE INDEX IF NOT EXISTS idx_clean_data_dataset_split
+    ON clean_data (dataset_split);
