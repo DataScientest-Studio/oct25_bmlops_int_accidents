@@ -4,7 +4,7 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'accidents_db')\gexec
 \c accidents_db;
 -- ============================================================
 CREATE TABLE IF NOT EXISTS raw_caracteristics (
-    num_acc INTEGER PRIMARY KEY,
+    num_acc BIGINT PRIMARY KEY,
     an INTEGER,
     mois INTEGER,
     jour INTEGER,
@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS raw_caracteristics (
     com INTEGER,
     adr VARCHAR,
     gps VARCHAR,
-    lat INTEGER,
-    long INTEGER,
+    lat BIGINT,
+    long VARCHAR,
     dep INTEGER
 );
 CREATE TABLE IF NOT EXISTS raw_holidays (
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS raw_holidays (
     holiday VARCHAR
 );
 CREATE TABLE IF NOT EXISTS raw_places (
-    num_acc INTEGER PRIMARY KEY,
+    num_acc BIGINT PRIMARY KEY,
     catr INTEGER,
     voie INTEGER,
     v1 INTEGER,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS raw_places (
 );
 CREATE TABLE IF NOT EXISTS raw_users (
     user_id SERIAL PRIMARY KEY,
-    num_acc INTEGER,
+    num_acc BIGINT,
     place INTEGER,
     catu INTEGER,
     grav INTEGER,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS raw_users (
     FOREIGN KEY (num_acc) REFERENCES raw_caracteristics(num_acc)
 );
 CREATE TABLE IF NOT EXISTS raw_vehicles (
-    num_acc INTEGER,
+    num_acc BIGINT,
     senc INTEGER,
     catv INTEGER,
     occutc INTEGER,
@@ -76,9 +76,19 @@ CREATE TABLE IF NOT EXISTS raw_vehicles (
     PRIMARY KEY (num_acc, num_veh),
     FOREIGN KEY (num_acc) REFERENCES raw_caracteristics(num_acc)
 );
+CREATE TABLE IF NOT EXISTS data_ingestion_progress (
+    id SERIAL PRIMARY KEY,
+    table_name VARCHAR(50) UNIQUE NOT NULL,
+    rows_loaded INTEGER DEFAULT 0,
+    total_rows INTEGER DEFAULT 0,
+    chunk_size INTEGER DEFAULT 1000,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    csv_directory VARCHAR(255),
+    is_complete BOOLEAN DEFAULT FALSE
+);
 CREATE TABLE IF NOT EXISTS preprocessed_data (
     user_id SERIAL PRIMARY KEY,
-    num_acc INTEGER,
+    num_acc BIGINT,
     year_ INTEGER,
     moy_cos FLOAT,
     moy_sin FLOAT,
@@ -96,8 +106,8 @@ CREATE TABLE IF NOT EXISTS preprocessed_data (
     weather INTEGER,
     road_type INTEGER,
     road_surface INTEGER,
-    latitude INTEGER,
-    longitude INTEGER,
+    latitude BIGINT,
+    longitude BIGINT,
     holiday BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES raw_users(user_id),
     FOREIGN KEY (num_acc) REFERENCES raw_caracteristics(num_acc)
