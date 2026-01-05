@@ -1,0 +1,36 @@
+[project]
+name = "oct25-bmlops-int-accidents"
+version = "0.1.0"
+description = "MLOps project to predict the severity of traffic accidents in France based on various features using machine learning techniques."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.121.3",
+    "httpx>=0.28.1",
+    "joblib>=1.5.2",
+    "kagglehub>=0.3.13",
+    "mlflow>=3.7.0",
+    "pandas>=2.3.3",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.0.0",
+    "scikit-learn>=1.7.2",
+    "uvicorn>=0.38.0",
+]
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.10.7",
+    "pytest>=9.0.1",
+    "seaborn>=0.13.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+]
