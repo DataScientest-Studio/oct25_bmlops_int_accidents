@@ -1,6 +1,6 @@
 from typing import Optional
 from .schemas import UserInDB
-from .security import verify_password
+
 
 fake_users_db = {
     "alice": {
@@ -18,10 +18,3 @@ def get_user(username: str) -> Optional[UserInDB]:
     return None
 
 
-def authenticate_user(username: str, password: str) -> Optional[UserInDB]:
-    user = get_user(username)
-    if not user:
-        return None
-    if not verify_password(password, user.hashed_password):
-        return None
-    return user

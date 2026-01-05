@@ -1,9 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import APIKeyQuery
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, Optional
-import os
 from dotenv import load_dotenv
+
+from fastapi.security import OAuth2PasswordRequestForm
+from src.auth.security import get_current_user, create_access_token, authenticate_user
+from src.auth.schemas import Token
+
 
 # Load environment variables
 load_dotenv()
@@ -98,40 +101,28 @@ app = FastAPI(
     version="1.0.0"
 )
 
-query_schema = APIKeyQuery(name="api_key")
+
 
 # Global variable to cache the predictor
 _predictor: Optional[AccidentSeverityPredictor] = None
 
-
-def verify_api_key(api_key: str = Depends(query_schema)) -> str:
-    """
-    Verify the API key provided by the user.
-    
-    Args:
-        api_key: API key from query parameter
-        
-    Returns:
-        API key if valid
-        
-    Raises:
-        HTTPException: If API key is invalid
-    """
-    expected_key = os.getenv("API_KEY")
-    
-    if not expected_key:
-        raise HTTPException(
-            status_code=500,
-            detail="API_KEY not configured on server"
-        )
-    
-    if api_key != expected_key:
+@app.post("/token", response_model=Token)
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
         raise HTTPException(
             status_code=401,
-            detail="Invalid API key"
+            detail="Incorrect username or password",
         )
-    
-    return api_key
+
+    access_token = create_access_token(
+        data={"sub": user.username}
+    )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
 
 
 def get_predictor() -> AccidentSeverityPredictor:
@@ -170,7 +161,7 @@ def read_root():
     return {"message": "Welcome to the Road Accidents Severity Prediction API"}
 
 @app.get('/health')
-def health_check(api_key: str = Depends(verify_api_key)):
+def health_check(current_user = Depends(get_current_user)):
     """Health check endpoint to verify API is running."""
     return {"status": "healthy"}
 
@@ -178,7 +169,7 @@ def health_check(api_key: str = Depends(verify_api_key)):
 @app.post('/predict', tags=['model'], response_model=PredictionResponse)
 def predict_severity(
     request: PredictionRequest,
-    api_key: str = Depends(verify_api_key)
+    current_user = Depends(get_current_user)
 ) -> PredictionResponse:
     """
     Predict the severity of a road accident based on input features.
@@ -223,7 +214,7 @@ def predict_severity(
 
 
 @app.get('/model/info', tags=['model'])
-def get_model_info(api_key: str = Depends(verify_api_key)) -> Dict:
+def get_model_info( current_user = Depends(get_current_user)) -> Dict:
     """
     Get information about the currently loaded model.
     
@@ -252,12 +243,12 @@ def get_model_info(api_key: str = Depends(verify_api_key)) -> Dict:
 
 
 @app.get('/train', tags=['model'])
-def train_model(api_key: str = Depends(verify_api_key)):
+def train_model(current_user = Depends(get_current_user)):
     # Placeholder for training logic
     return {"training": "Model training logic not yet implemented"}
 
 @app.post('/data/ingest-chunk', tags=['data'])
-def ingest_data_chunk(api_key: str = Depends(verify_api_key)):
+def ingest_data_chunk(current_user = Depends(get_current_user)):
     """
     Load the next chunk of data into the database.
     
@@ -279,7 +270,7 @@ def ingest_data_chunk(api_key: str = Depends(verify_api_key)):
         raise HTTPException(status_code=500, detail=f"Error loading data chunk: {str(e)}")
 
 @app.get('/data/progress', tags=['data'])
-def get_ingestion_progress(api_key: str = Depends(verify_api_key)):
+def get_ingestion_progress(current_user = Depends(get_current_user)):
     """
     Get the current progress of data ingestion for all tables.
     
@@ -320,7 +311,7 @@ def get_ingestion_progress(api_key: str = Depends(verify_api_key)):
         raise HTTPException(status_code=500, detail=f"Error retrieving progress: {str(e)}")
 
 @app.post('/data/reset-progress', tags=['data'])
-def reset_ingestion_progress(api_key: str = Depends(verify_api_key)):
+def reset_ingestion_progress(current_user = Depends(get_current_user)):
     """
     Reset the data ingestion progress to start from the beginning.
     
