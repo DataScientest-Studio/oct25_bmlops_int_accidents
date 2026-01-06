@@ -155,7 +155,7 @@ The project implements a Random Forest Classifier for predicting accident severi
 
 2. **Start the Streamlit App locally with:**
    ```bash
-   streamlit run src/streamlit/streamlit_app.py
+   PYTHONPATH=. streamlit run src/streamlit/streamlit_app.py
    ```
-3. **The Stramlit App can be accessed at:**
+3. **The Streamlit App can be accessed at:\n**
    http://localhost:8501/

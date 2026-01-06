@@ -11,12 +11,14 @@ services:
       - "${POSTGRES_HOST_PORT}:${POSTGRES_CONT_PORT}"
     volumes:
       - accidents_db_data:/var/lib/postgresql
-  ### TO UNCOMMENT (and adapt) when api implemented
+  # ## TO UNCOMMENT (and adapt) when api implemented
   # api:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile.api
   #   container_name: api_container
+  #   env_file:
+  #     - .env
   #   ports:
   #     - "${API_EXT_PORT}:${API_CONT_PORT}"
   #   networks:
@@ -28,6 +30,8 @@ services:
     container_name: streamlit_container
     environment:
       - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
     ### To uncomment when api service is operational
     # depends_on:
     #   api:

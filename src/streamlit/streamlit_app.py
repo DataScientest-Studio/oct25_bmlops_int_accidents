@@ -8,7 +8,9 @@ Start the API locally with:
 uvicorn src.api.main:app --reload
 
 Start the Streamlit locally with:
-streamlit run src/streamlit/streamlit_app.py
+PYTHONPATH=. streamlit run src/streamlit/streamlit_app.py
+
+PYTHONPATH might be needed so that the streamlit server finds the class import in utils when not containerized.
 """
 import streamlit as st
 # import pandas as pd
@@ -16,11 +18,18 @@ import datetime as dt
 import requests
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, Optional
+import os
+# from dotenv import load_dotenv
+
+
+# Load environment variables -> should not be needed when specifying a .env file in docker-compose
+#load_dotenv()
+
 
 ### QUICK VARIABLES
 
-api_ip = "127.0.0.1"
-api_port = 8000
+api_ip = os.environ.get("API_IP") # "127.0.0.1"
+api_port = os.environ.get("API_EXT_PORT") # 8000
 
 api_base_address = api_ip + ":" + str(api_port)
 
@@ -114,7 +123,9 @@ st.header("User API Frontend + Components Presentation")
 st.sidebar.title("Table of contents")
 pages=["Intro",
        "User Frontend",
-       "MLOps Architecture"]
+       "Project Progress",
+       "MLOps Architecture",
+       "Conclusion"]
 
 page=st.sidebar.radio("Go to", pages)
 
@@ -512,10 +523,39 @@ if page == pages[1]:
 
 
 
-### 2CHECK: Place holder optional: 
+### Place holder, confirmed not necessary here: 
 # - ingest data chunk
 # - train model
+# - evaluate performance
 # - get and reset ingestion progress
+
+
+
+
+
+
+
+### ARCHITECTURE AND COMPONENTS PRESENTATION
+# 2CHECK: still needs content, mostly bullet points of the development history + visual contents
+
+if page == pages[2]:
+
+    st.subheader("Project Progress")
+    
+    st.markdown("Here you'll find content to illustrate our account of the project development.")
+
+    ### Place holder
+    # Syntax bullet points
+    st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+    # separate for bigger spacing:
+    st.markdown("* 4: Blo")
+
+    # Syntax picture display
+    #st.image(image, caption=’It’s an image’)
+
+
 
 
 
@@ -526,7 +566,7 @@ if page == pages[1]:
 ### ARCHITECTURE AND COMPONENTS PRESENTATION
 # 2CHECK: still needs content
 
-if page == pages[2]:
+if page == pages[3]:
 
     st.subheader("MLOps Architecture")
     
@@ -556,3 +596,28 @@ if page == pages[2]:
         
     if arch_page == "Prediction API" :
         st.subheader("Prediction API")
+
+
+
+
+
+
+
+### CONCLUSION AND OUTLOOK
+# 2CHECK: still needs content, mostly bullet points
+
+if page == pages[4]:
+
+    st.subheader("Conclusion and Outlook")
+    
+
+    ### Place holder
+    # Syntax bullet points
+    st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+    # separate for bigger spacing:
+    st.markdown("* 4: Blo")
+
+    # Syntax picture display
+    #st.image(image, caption=’It’s an image’)

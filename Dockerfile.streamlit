@@ -1,7 +1,12 @@
 FROM python:3.11-slim
 WORKDIR /app
+# installing the requirements
 COPY src/streamlit/streamlit_requirements.txt ./
 RUN pip install --no-cache-dir -r streamlit_requirements.txt
-COPY src/streamlit/streamlit_app.py ./
-EXPOSE 8501
+# copying the required files
+COPY src/streamlit/streamlit_app.py /app/streamlit_app.py
+COPY src/utils/model_utils.py /app/src/utils/model_utils.py
+COPY src/utils/__init__.py /app/src/utils/__init__.py
+COPY src/__init__.py /app/src/__init__.py
+# EXPOSE 8501 # not necessary if using dockercompose with ports as env variables
 CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

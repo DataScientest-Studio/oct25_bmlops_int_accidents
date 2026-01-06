@@ -1,7 +1,7 @@
 """
 Centralized file for model utilities like the pydantic BaseModel class definitions
 """
-
+from typing import Dict, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 # Pydantic models for request/response validation

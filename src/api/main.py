@@ -1,3 +1,8 @@
+"""
+Remark: the class import from src.utils.model_utils might require special adjustment to
+be called properly from a container.
+"""
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import APIKeyQuery
 from pydantic import BaseModel, Field, ConfigDict
