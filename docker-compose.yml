@@ -95,6 +95,41 @@ services:
       retries: 30
     networks:
       - mlflow_network
+
+
+
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: api_container
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+      ALGORITHM: ${ALGORITHM}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  
+    depends_on:
+      mlflow:
+        condition: service_healthy
+      mlflow_minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      mlflow_network:
+        aliases:
+          - api
+
+
+
+
 volumes:
   accidents_db_data:
   mlflow_db_data:
@@ -102,3 +137,6 @@ volumes:
 networks:
   mlflow_network:
   data_network:
+
+
+
