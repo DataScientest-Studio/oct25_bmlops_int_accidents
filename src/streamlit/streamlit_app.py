@@ -2,6 +2,10 @@
 Streamlit App to present the project work
 Search '2CHECK' for points that need to be verified.
 
+!!! Remove the following lines when ready to load real models.
+    st.markdown("Testing result display (to remove for production version)")
+    result_display(test_pred)
+
 NB for the Readme:
 
 Start the API locally with:
@@ -11,6 +15,7 @@ Start the Streamlit locally with:
 PYTHONPATH=. streamlit run src/streamlit/streamlit_app.py
 
 PYTHONPATH might be needed so that the streamlit server finds the class import in utils when not containerized.
+
 """
 import streamlit as st
 # import pandas as pd
@@ -19,16 +24,35 @@ import requests
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, Optional
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
+from PIL import Image
+
+## Style for a wider display of contents, esp. needed for big schemas.
+
+st.markdown(
+    """
+    <style>
+        .block-container {
+            max-width: 90%;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+## Alternatives for max content width
+# st.set_page_config(layout="wide")
 
 
-# Load environment variables -> should not be needed when specifying a .env file in docker-compose
-#load_dotenv()
+# Load environment variables -> should not be needed when specifying a .env file in docker-compose, but needed to run without docker
+load_dotenv()
 
 
 ### QUICK VARIABLES
 
-api_ip = os.environ.get("API_IP") # "127.0.0.1"
+api_ip = os.environ.get("API_BASE_URL", "http://localhost")
 api_port = os.environ.get("API_EXT_PORT") # 8000
 
 api_base_address = api_ip + ":" + str(api_port)
@@ -42,75 +66,12 @@ from src.utils.model_utils import (
     PredictionResponse
 )
 
+### Loading the Mermaid Schemas
 
-### Deprecated because imported from utils above: Pydantic models for request/response validation
-# class PredictionRequest(BaseModel):
-#     """Request model for accident severity prediction."""
-#     year: int = Field(..., description="Year of the accident", ge=2000, le=2100)
-#     month: int = Field(..., description="Month of the accident", ge=1, le=12)
-#     hour: int = Field(..., description="Hour of the accident", ge=0, le=23)
-#     minute: int = Field(..., description="Minute of the accident", ge=0, le=59)
-#     user_category: int = Field(..., description="User category (e.g., driver, passenger, pedestrian)")
-#     sex: int = Field(..., description="Sex of the user")
-#     year_of_birth: int = Field(..., description="Year of birth of the user", ge=1900, le=2100)
-#     trip_purpose: int = Field(..., description="Purpose of the trip")
-#     security: int = Field(..., description="Security equipment used")
-#     luminosity: int = Field(..., description="Luminosity conditions")
-#     weather: int = Field(..., description="Weather conditions")
-#     type_of_road: int = Field(..., description="Type of road")
-#     road_surface: int = Field(..., description="Road surface condition")
-#     latitude: float = Field(..., description="Latitude of the accident location")
-#     longitude: float = Field(..., description="Longitude of the accident location")
-#     holiday: int = Field(..., description="Holiday indicator (0 or 1)", ge=0, le=1)
-    
-#     model_config = ConfigDict(
-#         json_schema_extra={
-#             "example": {
-#                 "year": 2023,
-#                 "month": 6,
-#                 "hour": 14,
-#                 "minute": 30,
-#                 "user_category": 1,
-#                 "sex": 1,
-#                 "year_of_birth": 1990,
-#                 "trip_purpose": 1,
-#                 "security": 1,
-#                 "luminosity": 1,
-#                 "weather": 1,
-#                 "type_of_road": 1,
-#                 "road_surface": 1,
-#                 "latitude": 48.8566,
-#                 "longitude": 2.3522,
-#                 "holiday": 0
-#             }
-#         }
-#     )
-
-
-# class PredictionResponse(BaseModel):
-#     """Response model for accident severity prediction."""
-#     prediction: int = Field(..., description="Predicted severity class (1-4)")
-#     prediction_label: str = Field(..., description="Human-readable severity label")
-#     probabilities: Dict[str, float] = Field(..., description="Probability for each severity class")
-#     confidence: float = Field(..., description="Confidence score (max probability)")
-#     model_version: Optional[str] = Field(None, description="Version of the model used")
-    
-#     model_config = ConfigDict(
-#         json_schema_extra={
-#             "example": {
-#                 "prediction": 3,
-#                 "prediction_label": "Hospitalized wounded",
-#                 "probabilities": {
-#                     "Unscathed": 0.1,
-#                     "Light injury": 0.2,
-#                     "Hospitalized wounded": 0.65,
-#                     "Killed": 0.05
-#                 },
-#                 "confidence": 0.65,
-#                 "model_version": "accident_severity_rf_20251210_162637"
-#             }
-#         }
-#     )
+from src.utils.schemas import (
+    render_mermaid,
+    overview_code
+)
 
 
 
@@ -150,6 +111,11 @@ if page == pages[0]:
 
 if page == pages[1]:
     st.subheader('Model Prediction')
+    st.markdown("This tool is based on the road accident database available on the Kaggle platform at this address:")
+    link_text = "Kaggle: Accidents in France from 2005 to 2016"
+    url = "https://www.kaggle.com/datasets/ahmedlahlou/accidents-in-france-from-2005-to-2016"
+    st.markdown(f"[{link_text}]({url})")
+
     st.markdown("In this part you'll be able to obtain severity predictions from the best model.")
     st.markdown("Severity classes are as follow:")
     st.markdown("* 1: Unscathed\n" \
@@ -160,12 +126,20 @@ if page == pages[1]:
 
 
 
-    ### API Key and API status check
+	### OAuth2 Authentication and Check
     
-    st.markdown("\n\n##### First you need to identify with the correct API Key:")
+    st.write("")
+    st.write("")
+    st.markdown("\n\n##### First you need to identify with the correct credentials:")
     
-    api_key = st.text_input("Enter your API Key:", "secret", type="password")
-    request_url = "http://" + api_base_address + "/health" + "?api_key=" + api_key
+    api_username = st.text_input("Enter your API Usernane:", "alice")
+    api_password = st.text_input("Enter your API Password:", "secret", type="password")
+    
+    token_url = api_base_address + "/token"
+    data = {"username": api_username,
+            "password": api_password
+            }
+
 
     # Debug: display request
     # st.write(request_url)
@@ -173,23 +147,24 @@ if page == pages[1]:
     if st.button("Identify"):
 
         try:
-            response = requests.get(request_url)
-            data = response.json()
+            response = requests.post(token_url, data=data)
+            response.raise_for_status()
 
             if response.status_code == 200:
-                status = data.get('status', None)  # Use .get to avoid KeyError
+                # status = data.get('status', None)  # Use .get to avoid KeyError
+                
+                token_json = response.json()
+                api_token = token_json["access_token"]
 
-                if status == "healthy":
-                    st.write("<h4 style='color: green;'>Identification successful! You can keep on.</h4>", unsafe_allow_html=True)
-                    # st.write("###### Identification successful! You can keep on.") # Alternative without html for color
+                st.write(f"###### Your authentication token:\n{api_token}")
+                st.write("<h4 style='color: green;'>Identification successful! You can keep on.</h4>", unsafe_allow_html=True)
+                # st.write("###### Identification successful! You can keep on.") # Alternative without html for color
 
-                else:  # Identification unsuccessful but server reached
-                    st.write(f"<h4 style='color: red;'>Identification failed!<br>Error Code: {status}</h4>", unsafe_allow_html=True)
-                    # st.write(f"###### Identification failed!\nError Code: {status}")  # Alternative without html for color
-            
+                st.session_state.auth_headers = {"Authorization": f"Bearer {api_token}"}
+                
             else:  # Server responded but with an error status
                 detail = data.get('detail', None)
-                st.write(f"<h4 style='color: red;'>Error: Server returned status code {response.status_code}<br>Detail: {detail}</h4>", unsafe_allow_html=True)
+                st.write(f"<h4 style='color: red;'>Error: Identification failed! Server returned status code {response.status_code}<br>Detail: {detail}</h4>", unsafe_allow_html=True)
                 # st.write(f"###### Error: Server returned status code {response.status_code}\nDetail: {detail}")  # Alternative without html for color
 
         except requests.ConnectionError:
@@ -207,7 +182,7 @@ if page == pages[1]:
 
 
 
-    ### Features
+    ### FEATURES 2CHECK the requested features are not the same as that of the kaggleDB -> to compare with preprocessing
 
     # instanciating a PredictionRequest object with the random values of the config example (gets directly overwritten by the user input items)
 
@@ -231,6 +206,10 @@ if page == pages[1]:
                 })
 
 
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
     st.markdown("\n\n##### Adjust the following features at will "
     "or scroll down to run the model directly.")
     
@@ -385,18 +364,10 @@ if page == pages[1]:
 ### MODEL EXECUTION
 
 
-    request_url = "http://" + api_base_address + "/predict" + "?api_key=" + api_key
-
-    #     2CHECK: it might be better to transmit the api_key in the headers? not sure how exactly.
-    #     headers = {"api_key":api_key,
-    #               # "Authorization": f"Bearer {api_key}",
-    #               "Content-Type": "application/json"}
+    request_url = api_base_address + "/predict"
 
     # Debug: display request
     # st.write(request_url)
-
-
-
 
 
     def result_display(pred: PredictionResponse):
@@ -442,7 +413,8 @@ if page == pages[1]:
     if st.button("Get prediction from best available model"):
 
         try:
-            response = requests.post(request_url, json=sfeatures_dict)#, headers=headers)
+            response = requests.post(request_url, json=sfeatures_dict, headers=st.session_state.auth_headers)
+            response.raise_for_status()
             data = response.json()
 
             if response.status_code == 200:
@@ -480,12 +452,7 @@ if page == pages[1]:
 
 ### GET MODEL INFO
 
-    request_url = "http://" + api_base_address + "/model/info" + "?api_key=" + api_key
-
-    #     2CHECK: it might be better to transmit the api_key in the headers? not sure how exactly.
-    #     headers = {"api_key":api_key,
-    #               # "Authorization": f"Bearer {api_key}",
-    #               "Content-Type": "application/json"}
+    request_url = api_base_address + "/model/info"
 
     # Debug: display request
     # st.write(request_url)
@@ -493,7 +460,8 @@ if page == pages[1]:
     if st.button("Get model information"):
 
         try:
-            response = requests.get(request_url)
+            response = requests.post(request_url, headers=st.session_state.auth_headers)
+            response.raise_for_status()
             data = response.json()
 
             if response.status_code == 200:
@@ -535,7 +503,7 @@ if page == pages[1]:
 
 
 
-### ARCHITECTURE AND COMPONENTS PRESENTATION
+### PROJECT PROGRESS
 # 2CHECK: still needs content, mostly bullet points of the development history + visual contents
 
 if page == pages[2]:
@@ -573,30 +541,230 @@ if page == pages[3]:
     st.markdown("Here you can get an overview of the MLOps architecture, " \
     "from data acquisition to model prediction")
 
-    # return to the overview when going back to page 2
-    arch_page="Architecture Overview" 
+    # [Deprecated] return to the overview when going back to page 2
+    # arch_page="Architecture Overview" 
+    # arch_page = st.selectbox("Select a component:", comp_pages)
 
-    arch_page = st.selectbox("Select a component:", 
-                             ("Architecture Overview", "ETL Process",
-                              "Train and Evaluate Model",
-                              "Determine Production Model",
-                              "Prediction API"))
+
+
+    ### construct to enable link access (from overview schema) to selectbox subcategories
+    # 2CHECK NOT FUNCTIONAL IN THIS STATE always loads page 0 (solution1: components have to go in dedicated pages)
+
+    comp_pages = {"Architecture Overview":"overview", 
+                  "ETL Process":"etl",
+                  "Train and Evaluate Model":"train_evaluate",
+                  "Determine Production Model":"id_prod",
+                  "Prediction API":"api"}
+    
+    params = st.query_params
+    page_from_url = params.get("page", "overview")
+
+    labels = list(comp_pages.keys())
+    values = list(comp_pages.values())
+
+    if page_from_url in values:
+        default_index = values.index(page_from_url)
+    else:
+        default_index = 0
+
+    arch_page = st.selectbox(
+        "Select a component:",
+        labels,
+        index=default_index
+    )
+
+    page_value = comp_pages[arch_page]
+
+    # keep URL in sync when user clicks selectbox
+    st.query_params["page"] = page_value
+
+    # 2CHECK there has to be a choice made (schema and/or components) between 
+    # tools (like airflow) and logical steps (like ETL, model training, etc...)
+    
     
     if arch_page == "Architecture Overview" :
         st.subheader("Architecture Overview")
 
-    if arch_page == "ETL Process" :
+        render_mermaid(overview_code)
+
+    elif arch_page == "ETL Process" :
         st.subheader("ETL Process")
 
-    if arch_page == "Train and Evaluate Model" :
-        st.subheader("Train and Evaluate Model")
+        ### Layout for standard component description
+
+        st.markdown("##### What needed to be done") # Ex: store the accident data
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Which tool was selected")
+        st.checkbox("NoSQL", value=False)
+        st.checkbox("PostgreSQL", value=True)
+        st.checkbox("SQLight", value=False)
+
+        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(logoX, caption="Logo of tool X", width=300)
+        st.write("")
+
+        st.markdown("##### Advantages") # Ex: structured data storing
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
         
-    if arch_page == "Determine Production Model" :
+        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        st.write("")
+
+
+
+
+
+    elif arch_page == "Train and Evaluate Model" :
+        st.subheader("Train and Evaluate Model")
+
+        ### Layout for standard component description
+
+        st.markdown("##### What needed to be done") # Ex: store the accident data
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Which tool was selected")
+        st.checkbox("NoSQL", value=False)
+        st.checkbox("PostgreSQL", value=True)
+        st.checkbox("SQLight", value=False)
+
+        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(logoX, caption="Logo of tool X", width=300)
+        st.write("")
+
+        st.markdown("##### Advantages") # Ex: structured data storing
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        
+        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        st.write("")
+
+
+
+
+
+    elif arch_page == "Determine Production Model" :
         st.subheader("Determine Production Model")
         
-    if arch_page == "Prediction API" :
+
+        ### Layout for standard component description
+
+        st.markdown("##### What needed to be done") # Ex: store the accident data
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Which tool was selected")
+        st.checkbox("NoSQL", value=False)
+        st.checkbox("PostgreSQL", value=True)
+        st.checkbox("SQLight", value=False)
+
+        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(logoX, caption="Logo of tool X", width=300)
+        st.write("")
+
+        st.markdown("##### Advantages") # Ex: structured data storing
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        
+        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        st.write("")
+
+
+
+
+
+    elif arch_page == "Prediction API" :
         st.subheader("Prediction API")
 
+
+
+        ### Layout for standard component description
+
+        st.markdown("##### What needed to be done") # Ex: store the accident data
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Which tool was selected")
+        st.checkbox("NoSQL", value=False)
+        st.checkbox("PostgreSQL", value=True)
+        st.checkbox("SQLight", value=False)
+
+        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(logoX, caption="Logo of tool X", width=300)
+        st.write("")
+
+        st.markdown("##### Advantages") # Ex: structured data storing
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        st.write("")
+
+        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* 1: Bla\n" \
+                "* 2: Bli\n"\
+                "* 3: Blu")
+        
+        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        st.write("")
 
 
 
@@ -620,4 +788,6 @@ if page == pages[4]:
     st.markdown("* 4: Blo")
 
     # Syntax picture display
-    #st.image(image, caption=’It’s an image’)
+    screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+    st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+    st.write("")

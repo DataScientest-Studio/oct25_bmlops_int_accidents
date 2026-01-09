@@ -13,14 +13,17 @@ RUN pip install --no-cache-dir \
     uvicorn[standard] \
     python-jose[cryptography] \
     passlib[bcrypt] \
-    bcrypt<4 \
+    "bcrypt<4" \
     python-dotenv \
     python-multipart \
-    pandas
+    pandas \
+    psycopg2-binary \
+    joblib
 
 # Setze Umgebungsvariablen für die API (optional, falls du Defaults willst)
-ENV HOST=0.0.0.0
-ENV PORT=8000
+# # Those variables don't get used.
+# ENV HOST=0.0.0.0
+# ENV PORT=8000
 
 # Exponiere den Port, auf dem die API läuft
 EXPOSE 8000
