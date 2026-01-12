@@ -377,27 +377,18 @@ services:
       dockerfile: Dockerfile.api
     container_name: api_container
     environment:
+      # Security configuration
       SECRET_KEY: ${SECRET_KEY}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
       ALGORITHM: ${ALGORITHM}
     ports:
-      - "8000:8000"
-    volumes:
-      - .:/app  
-    depends_on:
-      mlflow:
-        condition: service_healthy
-      mlflow_minio:
-        condition: service_healthy
+      - "${API_PORT}:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 10
-    networks:
-      mlflow_network:
-        aliases:
-          - api
+    restart: always
 
   # ===========================================
   # Monitoring Services (Prometheus & Grafana)
