@@ -515,11 +515,11 @@ if page == pages[2]:
 
     ### Place holder
     # Syntax bullet points
-    st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+    st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
     # separate for bigger spacing:
-    st.markdown("* 4: Blo")
+    st.markdown("* Blo")
 
     # Syntax picture display
     #st.image(image, caption=’It’s an image’)
@@ -567,7 +567,7 @@ if page == pages[4]:
                   "Containerization":"docker", 
                   "Unit Testing":"tests",
                   "Drift & Retraining":"grafana_evidently",
-                  "Automatisation":"airflow",
+                  "Automation":"airflow",
                   "User Frontend":"streamlit"}
     
     params = st.query_params
@@ -612,49 +612,93 @@ if page == pages[4]:
     
     
     elif arch_page == "Programming Environment" :
-        st.subheader("Programming Environment") #(Github Project +) Repro env
+        st.subheader("Programming Environment") #(GitHub Project +) Repro env
 
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Split the project in subtasks\n" \
+                "* Identify subtasks order and dependencies\n"\
+                "* Coordinate the work of several people with a realistic timeline\n"
+                "* Safely track each step the development in a centralized manner")
         st.write("")
 
         st.markdown("##### Which tool was selected")
-        st.checkbox("NoSQL", value=False)
-        st.checkbox("PostgreSQL", value=True)
-        st.checkbox("SQLight", value=False)
+        st.checkbox("GitLab", value=False)
+        st.checkbox("GitHub + GitHub Projects", value=True)
+        st.checkbox("Codeberg", value=False)
+        st.checkbox("Gitea", value=False)
 
-        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(logoX, caption="Logo of tool X", width=300)
+        logoX = Image.open("src/streamlit/Logo_github.png") # Edit the source file name
+        st.image(logoX, width=300)
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Reliable widespread Git-based tool\n" \
+                "* Code can be viewed and edited on the online platform\n" \
+                "* Project management directly integrated in the repository\n"\
+                "* Easy Kanban-style task management")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Complexity / learning curve\n" \
+                "* Limited advanced reporting")
+        st.write("")
+        
+        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* The base repository had to be forked to our own GitHub account to have access to the Project functions.")
+        
+        screenshotX = Image.open("src/streamlit/SS_github_project.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of GitHub Project", width=1000)
+        st.write("")
+        st.write("")
+        st.write("")
+
+
+
+
+
+        st.markdown("##### What needed to be done") # Ex: store the accident data
+        st.markdown("Ensure a reproducible work environment: \n" \
+                "* ...for each team member\n"\
+                "* ...independently of OS-platforms, IDEs and last updates\n" \
+                "* Convenient and fast setup")
+        st.write("")
+
+        st.markdown("##### Which tool was selected")
+        st.checkbox("Conda", value=False)
+        st.checkbox("Poetry", value=False)
+        st.checkbox("Pipenv", value=False)
+        st.checkbox("Astral UV", value=True)
+
+        logoX = Image.open("src/streamlit/Logo_uv.jpg") # Edit the source file name
+        st.image(logoX, width=300)
+        st.write("")
+
+        st.markdown("##### Advantages") # Ex: structured data storing
+        st.markdown("* Cross-platform tool to replace pip, pip-tools, pipx, virtualenv...\n" \
+                "* Extremely fast (10-100x faster than pip)\n" \
+                "* Installs/adapts both the required virtual python environment and its dependencies\n"\
+                "* Disk-space efficient, with a global cache for dependencies\n" \
+                "* Exact reproducibility (local dev / Docker containers) with uv.lock file")
+        st.write("")
+
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Needs prior installation\n" \
+                "* Relatively new tool with its own syntax\n"\
+                "* Some rare packages might need specific configuration.")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Reduced environment setup time from minutes to seconds!")
         
         # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
+        link_text = "To the UV website" # Ex: to the airflow live interface 
+        url = "https://docs.astral.sh/uv/"
         st.markdown(f"[{link_text}]({url})")
         
-        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        screenshotX = Image.open("src/streamlit/SS_uv.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of .venv setup with UV")
         st.write("")
 
 
@@ -667,9 +711,9 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Which tool was selected")
@@ -682,21 +726,21 @@ if page == pages[4]:
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
         link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
@@ -717,9 +761,9 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Which tool was selected")
@@ -732,21 +776,21 @@ if page == pages[4]:
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
         link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
@@ -767,9 +811,9 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Which tool was selected")
@@ -782,21 +826,21 @@ if page == pages[4]:
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
         link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
@@ -816,9 +860,9 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Which tool was selected")
@@ -831,25 +875,29 @@ if page == pages[4]:
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
+        link_text = "To the MLFlow interface (default credentials: mlflow / mlflow)" # Ex: to the airflow live interface 
+        url = "http://localhost:5001"
+        st.markdown(f"[{link_text}]({url})")
+
+        link_text = "To the MinIO interface (default credentials: mini_user / mini_password)" # Ex: to the airflow live interface 
+        url = "http://localhost:9000"
         st.markdown(f"[{link_text}]({url})")
         
         screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
@@ -866,44 +914,46 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Package all services into portable units that can run consistently " \
+        "across any environment (cloud or local).\n"\
+            "* Orchestrate multiple containers (API, DB, MLFlow...) to work together.")
         st.write("")
 
         st.markdown("##### Which tool was selected")
-        st.checkbox("NoSQL", value=False)
-        st.checkbox("PostgreSQL", value=True)
-        st.checkbox("SQLight", value=False)
+        st.checkbox("Docker (with Docker Compose)", value=True)
+        st.checkbox("Podman", value=False)
+        st.checkbox("Firecracker", value=False)
+        st.checkbox("Containerd (runtime) + Kubernetes (orchestration)", value=False)
+        st.checkbox("Bare metal deployment / manual scripting", value=False)
 
-        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(logoX, caption="Logo of tool X", width=300)
+
+        logoX = Image.open("src/streamlit/Logo_docker.jpg") # Edit the source file name
+        st.image(logoX, width=300)
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Widespread cross-platform tool (-> rich DockerHub)\n" \
+                "* Precise networking and volume management\n"\
+                "* Docker Compose simplifies multi-service orchestration (single command)")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Long build process, heavy disk and RAM usage if not optimized\n" \
+                "* [Hard build errors debugging because of CRLF EOL]\n"\
+                "* [Dockerfile copy syntax slighty differs from standard shell commands]")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("Even after build optimization, the entirety of the architecture including airflow was too RAM " \
+        "intensive to run on the Datascientest computer. The error messages were often opaque or misleading.")
         
         # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
+        link_text = "To the Docker website" # Ex: to the airflow live interface 
+        url = "https://www.docker.com/"
         st.markdown(f"[{link_text}]({url})")
         
-        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        screenshotX = Image.open("src/streamlit/SS_docker.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot of Docker Desktop")
         st.write("")
 
 
@@ -911,113 +961,107 @@ if page == pages[4]:
 
 
     elif arch_page == "Unit Testing" :
-        st.subheader("Unit Testing") # unit testing (evtl. + Github Actions)
+        st.subheader("Unit Testing") # unit testing (evtl. + GitHub Actions)
 
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Implement unit tests (+ linter) to ensure the different services operate properly.\n")
         st.write("")
 
-        st.markdown("##### Which tool was selected")
-        st.checkbox("NoSQL", value=False)
-        st.checkbox("PostgreSQL", value=True)
-        st.checkbox("SQLight", value=False)
+        st.markdown("##### Which tool was selected") # 2CHECK how are the unit tests ran and how is linting done. Any GitHub actions?
+        st.checkbox("Manual testing", value=False)
+        st.checkbox("Pytest + Unit tests files", value=True)
+        st.checkbox("GitHub Actions + Yaml file", value=False)
+        st.checkbox("VSCode standard linting extensions (Flake8, Black...)", value=True)
 
-        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(logoX, caption="Logo of tool X", width=300)
+        logoX = Image.open("src/streamlit/Logo_pytest.png") # Edit the source file name
+        st.image(logoX, width=200)
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Pytest: each service gets tested with precise log output\n" \
+                "* Extensions: Linting is done on the fly while coding")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Only python and bash files get linted\n" \
+                "* Manual execution through make commands, no automation on push like GitHub Actions")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Not enough time to implement CI/CD process in GitHub Actions.")
         
-        # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
-        st.markdown(f"[{link_text}]({url})")
+        # # [Optional] Syntax of a link to the actual tool interface
+        # link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
+        # url = "http://airflow:8000"
+        # st.markdown(f"[{link_text}]({url})")
         
-        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        screenshotX = Image.open("src/streamlit/SS_testing.png") # Edit the source file name
+        st.image(screenshotX, caption="Screenshot unit tests", width=600)
         st.write("")
 
 
 
 
-    elif arch_page == "Drift & Retraining" :
+    elif arch_page == "Drift & Retraining" : # whole section 2CHECK
         st.subheader("Drift & Retraining") # Grafana + Evidently
 
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Monitor the incoming data for 'Data Drift' (changes in statistical properties)\n" \
+                "* Visualize model performance over time")
         st.write("")
 
         st.markdown("##### Which tool was selected")
-        st.checkbox("NoSQL", value=False)
-        st.checkbox("PostgreSQL", value=True)
-        st.checkbox("SQLight", value=False)
+        st.checkbox("Alchemy", value=False)
+        st.checkbox("Crossbow", value=False)
+        st.checkbox("Evidently", value=True)
+        st.checkbox("Grafana", value=True)
+        st.checkbox("Kite", value=False)
 
-        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(logoX, caption="Logo of tool X", width=300)
+        logoX = Image.open("src/streamlit/Logo_grafana.png") # Edit the source file name
+        st.image(logoX, width=300)
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Evidently: provides deep statistical reports on data drift\n" \
+                "* Grafana: access restricted web based visualization tool with customizable dashboards\n"\
+                "* Grafana: event alerts and action triggering")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Not easy to define proper references to detect drifts") 
         st.write("")
 
-        st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        # st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
+        # st.markdown("* Bla\n" \
+        #         "* Bli\n"\
+        #         "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
+        link_text = "To the actual Grafana web interface (default credentials: admin / admin)" # Ex: to the airflow live interface 
+        url = "http://localhost:3000 "
         st.markdown(f"[{link_text}]({url})")
         
-        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+        screenshotX = Image.open("src/streamlit/SS_grafana_generic.png") # 2CHECK add real user case screenshot
+        st.image(screenshotX, caption="Grafana UI", width=500) 
         st.write("")
 
 
 
 
 
-    elif arch_page == "Automatisation" :
-        st.subheader("Automatisation") # Airflow
+    elif arch_page == "Automation" :
+        st.subheader("Automation") # Airflow
 
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Which tool was selected")
@@ -1030,25 +1074,33 @@ if page == pages[4]:
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Accidents data dag: Manages chunked or full data ingestion. \
+                    This allows for simulating data evolution over time.\n" \
+                "* Accidents ml dag: Handles the machine learning pipeline, including data cleaning, \
+                    dataset splitting, model training and evaluation.\n"\
+                "* Accidents dag: Orchestrates the ETL pipeline for data ingestion, cleaning, and model training.")
+        st.write("")
+
+        st.markdown("The project includes the following Airflow DAGs for orchestrating workflows:") # Ex: structured data storing
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Bla\n" \
+                "* Bli\n"\
+                "* Blu")
         
         # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
+        link_text = "To the Airflow live interface (default credentials: airflow / airflow)" # Ex: to the airflow live interface 
+        url = "http://localhost:8080"
         st.markdown(f"[{link_text}]({url})")
         
         screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
@@ -1065,45 +1117,35 @@ if page == pages[4]:
         ### Layout for standard component description
 
         st.markdown("##### What needed to be done") # Ex: store the accident data
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Provide a reliable and lightweight graphical interface to present results\n" \
+                "* Provide an interactive API frontend for users to input accident data and view predictions.")
         st.write("")
 
         st.markdown("##### Which tool was selected")
-        st.checkbox("NoSQL", value=False)
-        st.checkbox("PostgreSQL", value=True)
-        st.checkbox("SQLight", value=False)
+        st.checkbox("Google Slides / Powerpoint", value=False)
+        st.checkbox("Streamlit", value=True)
+        st.checkbox("FastAPI Docs / Swagger", value=False)
 
-        logoX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(logoX, caption="Logo of tool X", width=300)
+        logoX = Image.open("src/streamlit/Logo_streamlit.png") # Edit the source file name
+        st.image(logoX, width=500)
         st.write("")
 
         st.markdown("##### Advantages") # Ex: structured data storing
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Fast development in Python -> possibility to connect external content\n" \
+                "* Good widgets for user input and data visualization\n"\
+                "* Lightweight webpage with simple interface")
         st.write("")
 
-        st.markdown("##### Disadvantages / Issues") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("##### Disadvantages [/ Issues]") # Ex: difficult DB initialization with persistence in Docker
+        st.markdown("* Limited layout flexibility compared to custom CSS\n" \
+                "* No effective way to weblink to specific content within pages")
         st.write("")
 
         st.markdown("##### Comments on the results") # Ex: difficult DB initialization with persistence in Docker
-        st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
+        st.markdown("* Used to build both the user prediction app and the project presentation itself\n" \
+                "* As each new user input triggers a complete topdown execution of the streamlit code, it needs \
+                special care to keep variables (like the API OAuth2 token) in memory")
         
-        # [Optional] Syntax of a link to the actual tool interface
-        link_text = "To the actual tool live interface" # Ex: to the airflow live interface 
-        url = "http://airflow:8000"
-        st.markdown(f"[{link_text}]({url})")
-        
-        screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-        st.image(screenshotX, caption="Screenshot of tool X", width=1000)
-        st.write("")
 
 
 
@@ -1115,18 +1157,22 @@ if page == pages[4]:
 
 if page == pages[5]:
 
-    st.subheader("Conclusion and Outlook")
+    st.subheader("Conclusion and Outlook") #2CHECK
     
 
     ### Place holder
     # Syntax bullet points
-    st.markdown("* 1: Bla\n" \
-                "* 2: Bli\n"\
-                "* 3: Blu")
-    # separate for bigger spacing:
-    st.markdown("* 4: Blo")
-
-    # Syntax picture display
-    screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
-    st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+    st.markdown("* Setup a reproducible development environment and a project organization for the team\n" \
+                "* Devised a complete MLOps architecture, from data handling to model training and API frontend for user inference.\n"\
+                "* The correct execution can be tested during development and performance and operations monitored\n"\
+                "* The entirety of the architecture can be easily deployed in one command as an orchestrated group of containerized microservices")
     st.write("")
+    # separate for bigger spacing:
+    st.markdown("* Several improvements remain to be tested/implemented (Kubernetes scaling, GitHub Actions...) as health issues\
+                 in the team strongly reduced the available development time")
+    st.write("")
+    st.markdown("##### Thank you!")
+    # # Syntax picture display
+    # screenshotX = Image.open("src/streamlit/Logo_tool_X.png") # Edit the source file name
+    # st.image(screenshotX, caption="Screenshot of tool X", width=1000)
+    # st.write("")
