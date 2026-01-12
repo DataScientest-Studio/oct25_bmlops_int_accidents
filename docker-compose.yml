@@ -371,6 +371,25 @@ services:
     networks:
       - mlflow_network
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: api_container
+    environment:
+      # Security configuration
+      SECRET_KEY: ${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+      ALGORITHM: ${ALGORITHM}
+    ports:
+      - "${API_PORT}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
   # ===========================================
   # Monitoring Services (Prometheus & Grafana)
   # ===========================================
