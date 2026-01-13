@@ -1,8 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException
+import time
+from fastapi import FastAPI, Depends, HTTPException, Response, Request
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, Optional
 from dotenv import load_dotenv
 import mlflow
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 
 from fastapi.security import OAuth2PasswordRequestForm
 from src.auth.security import get_current_user, create_access_token, authenticate_user
@@ -30,11 +38,88 @@ from src.utils.ml_utils import (
 )
 
 
+class DriftMetricsRequest(BaseModel):
+    """Request model for submitting drift metrics from Airflow DAG."""
+    overall_drift_score: float = Field(..., description="Overall data drift score (0-1)", ge=0, le=1)
+    feature_drift_scores: Dict[str, float] = Field(..., description="Per-feature drift scores")
+    timestamp: Optional[str] = Field(None, description="ISO format timestamp of drift computation")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "overall_drift_score": 0.15,
+                "feature_drift_scores": {
+                    "year": 0.05,
+                    "month": 0.12,
+                    "hour": 0.08,
+                    "user_category": 0.20
+                },
+                "timestamp": "2026-01-12T16:30:00Z"
+            }
+        }
+    )
+
+
 app = FastAPI(
     title="Road Accidents Severity Prediction API",
     description="API for predicting the severity of road accidents in France",
     version="1.0.0"
 )
+
+# Prometheus metrics registry and metrics
+registry = CollectorRegistry()
+
+predictions_total = Counter(
+    "predictions_total",
+    "Total number of predictions served",
+    registry=registry,
+)
+
+prediction_latency_seconds = Histogram(
+    "prediction_latency_seconds",
+    "Prediction latency in seconds",
+    buckets=(0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10),
+    registry=registry,
+)
+
+predictions_by_severity = Counter(
+    "predictions_by_severity",
+    "Predictions by severity label",
+    ["severity"],
+    registry=registry,
+)
+
+prediction_errors = Counter(
+    "prediction_errors_total",
+    "Total number of prediction errors",
+    ["error_type"],
+    registry=registry,
+)
+
+api_requests_total = Counter(
+    "api_requests_total",
+    "Total number of API requests",
+    ["endpoint", "method", "status"],
+    registry=registry,
+)
+
+data_drift_score = Gauge(
+    "data_drift_score",
+    "Latest data drift score (0-1)",
+    registry=registry,
+)
+
+feature_drift = Gauge(
+    "feature_drift",
+    "Feature-level drift score",
+    ["feature"],
+    registry=registry,
+)
+
+# Initialize drift metrics to zero so Grafana panels have values
+data_drift_score.set(0.0)
+for feature in FEATURE_COLUMNS:
+    feature_drift.labels(feature=feature).set(0.0)
 
 @app.on_event("startup")
 def startup_event():
@@ -125,6 +210,7 @@ def predict_severity(
     Raises:
         HTTPException: If prediction fails or model is unavailable
     """
+    start_time = time.perf_counter()
     try:
         # Get predictor (will initialize if needed)
         predictor = get_predictor()
@@ -137,16 +223,76 @@ def predict_severity(
         
         # Add model version to response
         result['model_version'] = predictor.model_dir.name
+
+        # Update Prometheus metrics
+        predictions_total.inc()
+        prediction_latency_seconds.observe(time.perf_counter() - start_time)
+        predictions_by_severity.labels(severity=result.get('prediction_label', 'unknown')).inc()
+        api_requests_total.labels(endpoint="/predict", method="POST", status="success").inc()
         
         return PredictionResponse(**result)
         
-    except HTTPException:
-        # Re-raise HTTP exceptions
+    except HTTPException as http_exc:
+        # Track HTTP errors
+        prediction_errors.labels(error_type="http_error").inc()
+        api_requests_total.labels(endpoint="/predict", method="POST", status=str(http_exc.status_code)).inc()
         raise
     except Exception as e:
+        # Track general errors
+        prediction_errors.labels(error_type="prediction_failed").inc()
+        api_requests_total.labels(endpoint="/predict", method="POST", status="500").inc()
         raise HTTPException(
             status_code=500,
             detail=f"Prediction failed: {str(e)}"
+        )
+
+
+@app.get("/metrics")
+async def metrics(request: Request):
+    """
+    Expose Prometheus metrics for scraping.
+    """
+    return Response(content=generate_latest(registry), media_type="text/plain")
+
+
+@app.post("/metrics/drift")
+async def submit_drift_metrics(drift_data: DriftMetricsRequest, current_user=Depends(get_current_user)):
+    """
+    Submit drift metrics from Airflow DAG to update Prometheus gauges.
+    
+    This endpoint is called by the DAG after drift detection to persist
+    the computed drift scores in Prometheus so Grafana can visualize them.
+    
+    Args:
+        drift_data: DriftMetricsRequest with overall and per-feature drift scores
+        current_user: Authenticated user (required for security)
+    
+    Returns:
+        Status confirmation message
+    """
+    try:
+        # Update overall drift score gauge
+        data_drift_score.set(drift_data.overall_drift_score)
+        
+        # Update per-feature drift gauges
+        for feature, score in drift_data.feature_drift_scores.items():
+            try:
+                feature_drift.labels(feature=feature).set(score)
+            except Exception as e:
+                # Log but don't fail if a feature isn't recognized
+                pass
+        
+        return {
+            "status": "success",
+            "message": "Drift metrics updated successfully",
+            "overall_drift_score": drift_data.overall_drift_score,
+            "features_updated": len(drift_data.feature_drift_scores)
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update drift metrics: {str(e)}"
         )
 
 
